@@ -1,73 +1,42 @@
-import logo from "./logo.svg";
-import "./App.css";
-import { useRef, useState } from "react";
-
+import Header from "./components/Header";
+import Main from "./components/Main";
+import styled from "styled-components";
+import Cart from "./components/Cart";
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect } from "react";
+import { fetchCartData, sendCartData } from "./store/cart-slice";
+let isInitial = true;
 function App() {
-  const [result, setResult] = useState([
-    {
-      id: "e1",
-      text: "hi",
-    },
-    {
-      id: "e2",
-      text: "bye",
-    },
-  ]);
+  const showCart = useSelector((state) => state.ui.cartIsVisible);
+  const cart = useSelector((state) => state.cart);
+  const dispatch = useDispatch();
 
-  const [inputValue, setInputValue] = useState("");
-  const [isTouched, setIsTouched] = useState(false);
-  const [isExist, setIsExist] = useState(false);
-
-  const inputRef = useRef();
-  const inputChange = (event) => {
-    setInputValue(event.target.value);
-  };
-  const submitButtonHandler = (event) => {
-    event.preventDefault();
-    setResult([
-      {
-        id: Math.random().toString(),
-        text: inputValue,
-      },
-      ...result,
-    ]);
-    console.log(result);
-    setInputValue("");
-  };
-  const filtered = result.filter((item) => {
-    return item.text === inputValue;
-  });
-  const inputBlur = (event) => {
-    setIsTouched(true);
-    if (filtered.length > 0) {
-      setIsExist(true);
-    } else {
-      setIsExist(false);
+  useEffect(() => {
+    dispatch(fetchCartData());
+  }, [dispatch]);
+  useEffect(() => {
+    if (isInitial) {
+      isInitial = false;
+      return;
     }
-  };
-
-  let content = result.map((item) => <li key={item.id}>{item.text}</li>);
-
+    dispatch(sendCartData(cart));
+  }, [cart, dispatch]);
   return (
-    <div className="App">
-      <form className="input-form" onSubmit={submitButtonHandler}>
-        <input
-          type="text"
-          name=""
-          id=""
-          value={inputValue}
-          onChange={inputChange}
-          ref={inputRef}
-          onBlur={inputBlur}
-        />
-        
-        <button disabled={isExist}>확인</button>
-      </form>
-      <div className="result-box">
-        <ul>{content}</ul>
-      </div>
-    </div>
+    <Apps>
+      <Header />
+      {showCart && <Cart />}
+      <Main />
+    </Apps>
   );
 }
 
 export default App;
+
+const Apps = styled.div`
+  text-align: center;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #3f3f3f;
+`;
